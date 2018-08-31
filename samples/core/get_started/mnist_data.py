@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
@@ -25,11 +26,11 @@ def load_data():
 
     # test = pd.read_csv(test_path, names=CSV_COLUMN_NAMES, header=0)
     # test_x, test_y = test, test.pop(y_name)
-    mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
+    mnist = input_data.read_data_sets("MNIST_data/")
     train_x = mnist.train.images
-    train_y = mnist.train.labels
+    train_y = np.array(mnist.train.labels,  dtype=np.int32)
     test_x = mnist.test.images
-    test_y = mnist.test.images
+    test_y = np.array(mnist.test.images, dtype=np.int32)
 
     return (train_x, train_y), (test_x, test_y)
 
@@ -48,7 +49,7 @@ def train_input_fn(features, labels, batch_size):
 
 def eval_input_fn(features, labels, batch_size):
     """An input function for evaluation or prediction"""
-    features=dict(features)
+    # features=dict(features)
     if labels is None:
         # No labels, use only features.
         inputs = features

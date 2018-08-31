@@ -38,7 +38,7 @@ def my_model(features, labels, mode, params):
     # # Compute logits (1 per class).
     # logits = tf.layers.dense(net, params['n_classes'], activation=None)
     net = tf.layers.dense(features, params['n_classes'], activation='relu')
-    logits = tf.layers.dense(net, params['n_classes'], activation=None)
+    logits = tf.layers.dense(net, 10, activation=None)
 
     # Compute predictions.
     predicted_classes = tf.argmax(logits, 1)
@@ -51,7 +51,7 @@ def my_model(features, labels, mode, params):
         return tf.estimator.EstimatorSpec(mode, predictions=predictions)
 
     # Compute loss.
-    labels = tf.argmax(labels, axis=1)
+    # labels = tf.argmax(labels, axis=1)
     loss = tf.losses.sparse_softmax_cross_entropy(labels=labels, logits=logits)
 
     # Compute evaluation metrics.
@@ -100,34 +100,36 @@ def main(argv):
         input_fn=lambda:mnist_data.train_input_fn(train_x, train_y, args.batch_size),
         steps=args.train_steps)
 
+    # save
+
     # Evaluate the model.
     eval_result = classifier.evaluate(
         input_fn=lambda:mnist_data.eval_input_fn(test_x, test_y, args.batch_size))
 
     print('\nTest set accuracy: {accuracy:0.3f}\n'.format(**eval_result))
 
-    # Generate predictions from the model
-    expected = ['Setosa', 'Versicolor', 'Virginica']
-    predict_x = {
-        'SepalLength': [5.1, 5.9, 6.9],
-        'SepalWidth': [3.3, 3.0, 3.1],
-        'PetalLength': [1.7, 4.2, 5.4],
-        'PetalWidth': [0.5, 1.5, 2.1],
-    }
+    # # Generate predictions from the model
+    # expected = ['Setosa', 'Versicolor', 'Virginica']
+    # predict_x = {
+    #     'SepalLength': [5.1, 5.9, 6.9],
+    #     'SepalWidth': [3.3, 3.0, 3.1],
+    #     'PetalLength': [1.7, 4.2, 5.4],
+    #     'PetalWidth': [0.5, 1.5, 2.1],
+    # }
 
-    predictions = classifier.predict(
-        input_fn=lambda:mnist_data.eval_input_fn(predict_x,
-                                                labels=None,
-                                                batch_size=args.batch_size))
+    # predictions = classifier.predict(
+    #     input_fn=lambda:mnist_data.eval_input_fn(predict_x,
+    #                                             labels=None,
+    #                                             batch_size=args.batch_size))
 
-    for pred_dict, expec in zip(predictions, expected):
-        template = ('\nPrediction is "{}" ({:.1f}%), expected "{}"')
+    # for pred_dict, expec in zip(predictions, expected):
+    #     template = ('\nPrediction is "{}" ({:.1f}%), expected "{}"')
 
-        class_id = pred_dict['class_ids'][0]
-        probability = pred_dict['probabilities'][class_id]
+    #     class_id = pred_dict['class_ids'][0]
+    #     probability = pred_dict['probabilities'][class_id]
 
-        print(template.format(mnist_data.SPECIES[class_id],
-                              100 * probability, expec))
+    #     print(template.format(mnist_data.SPECIES[class_id],
+    #                           100 * probability, expec))
 
 
 if __name__ == '__main__':
