@@ -20,7 +20,7 @@ import tensorflow as tf
 
 # Training Parameters
 learning_rate = 0.001
-num_steps = 2000
+num_steps = 100
 batch_size = 128
 
 # Network Parameters
