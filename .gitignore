@@ -92,3 +92,4 @@ ENV/
 .idea/
 
 samples/outreach/blogs/segmentation_blogpost/carvana-image-masking-challenge/
+MNIST_data/

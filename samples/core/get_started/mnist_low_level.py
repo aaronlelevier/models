@@ -5,7 +5,7 @@ from tensorflow.examples.tutorials.mnist import input_data
 
 N_CLASSES = 10
 LR = 0.001
-EPOCHS = 2
+EPOCHS = 1
 BATCH_SIZE = 32
 
 
@@ -37,7 +37,7 @@ def get_train_op(logits, labels):
     loss_op = tf.reduce_mean(
         tf.nn.sparse_softmax_cross_entropy_with_logits(
             logits=logits, labels=labels))
-    optimizer = tf.train.AdamOptimizer(learning_rage=LR)
+    optimizer = tf.train.AdamOptimizer(learning_rate=LR)
     return optimizer.minimize(
         loss_op,
         global_step=tf.train.get_global_step())
@@ -45,8 +45,6 @@ def get_train_op(logits, labels):
 
 def main():
     (train_x, train_y), (test_x, test_y) = load_data()
-    n_train = train_x[0]
-    n_test = test_x[0]
 
     train_ds = get_train_ds(train_x, train_y)
     train_ds_iterator = train_ds.make_one_shot_iterator()
@@ -58,32 +56,38 @@ def main():
     X = tf.placeholder(tf.float32, shape=[None, 784], name="X")
     y = tf.placeholder(tf.float32, shape=[None], name="y")
 
-    with tf.Session().as_default():
+    with tf.Session().as_default() as sess:
         init = tf.global_variables_initializer()
         sess.run(init)
 
-        X_train_batch, y_train_batch = train_ds_iterator.get_next()
+        # nets
         logits_train = conv_net(X)
+        logits_test = conv_net(X)
 
-        X_test_batch, y_test_batch = test_ds_iterator.get_next()
-        logits_test = conv_net(X_test_batch, y_test_batch)
+        # predictions
+        pred_classes = tf.argmax(logits_test, axis=1)
+        # REVIEW: not sure if used?
+        # pred_probas = tf.nn.softmax(pred_classes)
 
         # train_op
         train_op = get_train_op(
             logits=logits_train,
-            labels=tf.cast(y_train_batch, dtype=tf.int32))
+            labels=tf.cast(y, dtype=tf.int32))
 
-        # predictions
-        predictions = tf.argmax(logits_test, axis=1)
+        # accuracy_op - for test set
+        accuracy_op = tf.metrics.accuracy(labels=y, predictions=pred_classes)
 
-        # accuracy_op
-        accuracy_op = tf.metrics.accuracy(
-            labels=y_train_batch, predictions=predictions)
-
-        for epoch in EPOCHS:
+        for _ in range(EPOCHS):
             # for step in range(0, n_train, BATCH_SIZE):
-            train, accuracy = sess.run([train_op, accuracy_op])
+            X_train_batch_op, y_train_batch_op = train_ds_iterator.get_next()
+            X_train_batch, y_train_batch = sess.run([X_train_batch_op, y_train_batch_op])
+
+            train, accuracy = sess.run(
+                [train_op, accuracy_op],
+                feed_dict={X: X_train_batch, y: y_train_batch})
             import pdb;pdb.set_trace()
+
+        # X_test_batch, y_test_batch = test_ds_iterator.get_next()
 
 
 if __name__ == '__main__':
